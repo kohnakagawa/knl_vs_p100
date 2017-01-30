@@ -15,6 +15,18 @@ __global__ void saxpy(const double* __restrict__ x,
   }
 }
 
+__global__ void saxpy2(const double2* __restrict__ x,
+                       const double2* __restrict__ y,
+                       double2* __restrict__ z,
+                       const double s,
+                       const int val_size) {
+  const auto tid = threadIdx.x + blockIdx.x * blockDim.x;
+  if (tid < val_size) {
+    z[tid].x = s * x[tid].x + y[tid].x;
+    z[tid].y = s * x[tid].y + y[tid].y;
+  }
+}
+
 void reference(const std::vector<double>& x,
                const std::vector<double>& y,
                std::vector<double>& z,
@@ -26,15 +38,15 @@ void reference(const std::vector<double>& x,
 }
 
 void check(const std::vector<double>& z_ref,
-           const cuda_ptr<double>& z) {
+           const double* z) {
   const auto size = z_ref.size();
   for (size_t i = 0; i < size; i++) {
     if (z_ref[i] != z[i]) {
       std::cout << "mismatch\n";
-      std::cout << z_ref[i] << " " << z[i] << std::endl;
+      std::cout << i << " " << z_ref[i] << " " << z[i] << std::endl;
       std::exit(1);
     }
- }
+  }
 }
 
 #define BENCH(repr)                                                     \
@@ -72,10 +84,11 @@ int main(const int argc, const char* argv[]) {
   const double s = 2.0;
 
   cuda_ptr<double> x_vec, y_vec, z_vec;
+  cuda_ptr<double2> x2_vec, y2_vec, z2_vec;
 
-  x_vec.allocate(val_size);
-  y_vec.allocate(val_size);
-  z_vec.allocate(val_size);
+  x_vec.allocate(val_size); x2_vec.allocate(val_size / 2);
+  y_vec.allocate(val_size); y2_vec.allocate(val_size / 2);
+  z_vec.allocate(val_size); z2_vec.allocate(val_size / 2);
 
   std::mt19937 mt;
   std::uniform_real_distribution<double> urd(0, 1.0);
@@ -83,9 +96,16 @@ int main(const int argc, const char* argv[]) {
   std::generate_n(&y_vec[0], val_size, [&mt, &urd](){return urd(mt);});
   std::fill_n(&z_vec[0], val_size, 0.0);
 
-  x_vec.host2dev();
-  y_vec.host2dev();
-  z_vec.host2dev();
+  for (int i = 0; i < val_size; i += 2) {
+    x2_vec[i / 2].x = x_vec[i    ];
+    x2_vec[i / 2].y = x_vec[i + 1];
+    y2_vec[i / 2].x = y_vec[i    ];
+    y2_vec[i / 2].y = y_vec[i + 1];
+  }
+
+  x_vec.host2dev(); x2_vec.host2dev();
+  y_vec.host2dev(); y2_vec.host2dev();
+  z_vec.host2dev(); z2_vec.host2dev();
 
   std::vector<double> x_vec_ref(val_size), y_vec_ref(val_size), z_vec_ref(val_size);
 
@@ -95,9 +115,13 @@ int main(const int argc, const char* argv[]) {
   BENCH(reference(x_vec_ref, y_vec_ref, z_vec_ref, s));
 
   const auto tb_size = 128;
-  const auto gl_size = (val_size - 1) / tb_size + 1;
+  auto gl_size = (val_size - 1) / tb_size + 1;
   BENCH_CUDA(saxpy, gl_size, tb_size, x_vec, y_vec, z_vec, s, val_size);
 
-  z_vec.dev2host();
-  check(z_vec_ref, z_vec);
+  gl_size = (val_size / 2 - 1) / tb_size + 1;
+  BENCH_CUDA(saxpy2, gl_size, tb_size, x2_vec, y2_vec, z2_vec, s, val_size / 2);
+
+  z_vec.dev2host(); z2_vec.dev2host();
+  check(z_vec_ref, &z_vec[0]);
+  check(z_vec_ref, &z2_vec[0].x);
 }

@@ -4,6 +4,7 @@
 #include <random>
 #include <chrono>
 #include <x86intrin.h>
+#include <hbwmalloc.h>
 
 void saxpy(const double* __restrict x,
            const double* __restrict y,
@@ -18,8 +19,27 @@ void saxpy(const double* __restrict x,
     for (int i = 0; i < size; i += 8) {
       const auto x_vec = _mm512_load_pd(x + i);
       const auto y_vec = _mm512_load_pd(y + i);
-      const auto dst = _mm512_fmadd_pd(s_vec, x_vec, y_vec);
+      const auto dst   = _mm512_fmadd_pd(s_vec, x_vec, y_vec);
       _mm512_store_pd(z + i, dst);
+    }
+  }
+}
+
+void saxpy2(const double* __restrict x,
+            const double* __restrict y,
+            double* __restrict z,
+            const double s,
+            const int val_size) {
+#pragma omp parallel
+  {
+    const auto size = val_size;
+    const auto s_vec = _mm512_set1_pd(s);
+#pragma omp for
+    for (int i = 0; i < size; i += 8) {
+      const auto dst = _mm512_fmadd_pd(s_vec,
+                                       _mm512_load_pd(x + i),
+                                       _mm512_load_pd(y + i));
+      _mm512_stream_pd(z + i, dst);
     }
   }
 }
@@ -31,6 +51,16 @@ void reference(const std::vector<double>& x,
   const int size = x.size();
   for (int i = 0; i < size; i++) {
     z[i] = s * x[i] + y[i];
+  }
+}
+
+void first_touch(double* x,
+                 double* y,
+                 double* z,
+                 const int val_size) {
+#pragma omp parallel for
+  for (int i = 0; i < val_size; i++) {
+    x[i] = y[i] = z[i] = 0.0;
   }
 }
 
@@ -72,9 +102,17 @@ int main(const int argc, const char* argv[]) {
   double *y_vec = nullptr;
   double *z_vec = nullptr;
 
+#if 0
   posix_memalign((void**)&x_vec, 64, val_size * sizeof(double));
   posix_memalign((void**)&y_vec, 64, val_size * sizeof(double));
   posix_memalign((void**)&z_vec, 64, val_size * sizeof(double));
+#else
+  hbw_posix_memalign((void**)&x_vec, 64, val_size * sizeof(double));
+  hbw_posix_memalign((void**)&y_vec, 64, val_size * sizeof(double));
+  hbw_posix_memalign((void**)&z_vec, 64, val_size * sizeof(double));
+#endif
+
+  first_touch(x_vec, y_vec, z_vec, val_size);
 
   std::mt19937 mt;
   std::uniform_real_distribution<double> urd(0, 1.0);
@@ -89,6 +127,16 @@ int main(const int argc, const char* argv[]) {
   std::copy_n(&z_vec[0], val_size, z_vec_ref.begin());
   BENCH(reference(x_vec_ref, y_vec_ref, z_vec_ref, s));
 
-  BENCH(saxpy(x_vec, y_vec, z_vec, s, val_size));
+  BENCH(saxpy2(x_vec, y_vec, z_vec, s, val_size));
   check(z_vec_ref, z_vec);
+
+#if 0
+  free(x_vec);
+  free(y_vec);
+  free(z_vec);
+#else
+  hbw_free(x_vec);
+  hbw_free(y_vec);
+  hbw_free(z_vec);
+#endif
 }

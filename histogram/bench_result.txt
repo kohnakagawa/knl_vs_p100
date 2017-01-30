@@ -1,0 +1,9 @@
+@Intel(R) Xeon Phi(TM) CPU 7250 @ 1.40GHz
+array size is default 10000000
+reference(val_ref, bin_ref) 18738 [microsec]
+make_hist(val, bin, val_size) 39182 [microsec]
+
+@Tesla P100-PCIE-16GB + Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.40GHz
+array size is default 10000000
+reference(val_ref, bin_ref) 6711 [microsec]
+make_hist 713 [microsec]

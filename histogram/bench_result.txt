@@ -7,3 +7,8 @@ make_hist(val, bin, val_size) 39182 [microsec]
 array size is default 10000000
 reference(val_ref, bin_ref) 6711 [microsec]
 make_hist 713 [microsec]
+
+@Tesla K40t + Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz
+array size is default 10000000
+reference(val_ref, bin_ref) 7998 [microsec]
+make_hist 25184 [microsec]

@@ -1,14 +1,15 @@
-KNL  = saxpy_knl.out
-ASM  = saxpy_knl.s
+KNL  = daxpy_knl.out daxpy_knl_mpi.out
+ASM  = daxpy_knl.s
 CXX  = icpc
+MPI_CXX = mpiicpc
 WARNINGS = -Wall -Wextra
 CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp -xMIC-AVX512 -qopt-prefetch=4
 LIBRARY = -lmemkind
 
-CUDA = saxpy_cuda.out
-PTX = saxpy_cuda.ptx
-SASS = saxpy_cuda.sass
-CUBIN = saxpy_cuda.cubin
+PASCAL = daxpy_pascal.out
+PTX = daxpy_pascal.ptx
+SASS = daxpy_pascal.sass
+CUBIN = daxpy_pascal.cubin
 
 CUDA_HOME = /usr/local/cuda
 NVCC = nvcc
@@ -16,11 +17,11 @@ NVCCFLAGS = -O3 -std=c++11 -arch=sm_60 -Xcompiler "$(WARNINGS) -O3" -ccbin=g++ -
 INCLUDE = -I$(CUDA_HOME)/include -I$(CUDA_HOME)/samples/common/inc
 
 knl: $(KNL) $(ASM)
-cuda: $(CUDA) $(SASS) $(PTX) $(CUBIN)
+pascal: $(PASCAL) $(SASS) $(PTX) $(CUBIN)
 
-$(PTX): saxpy_cuda.cu
+$(PTX): daxpy_pascal.cu
 $(SASS): $(CUBIN)
-$(CUBIN): saxpy_cuda.cu
+$(CUBIN): daxpy_pascal.cu
 
 .SUFFIXES:
 .SUFFIXES: .cu .out
@@ -43,9 +44,11 @@ $(CUBIN): saxpy_cuda.cu
 .cpp.s:
 	$(CXX) $(CXX_FLAGS) -S -masm=intel $< $(LIBRARY) -o $@
 
-.SUFFIXES: .cpp .out
-.cpp.out:
+daxpy_knl.out: daxpy_knl.cpp
 	$(CXX) $(CXX_FLAGS) $< $(LIBRARY) -o $@
 
+daxpy_knl_mpi.out: daxpy_knl_mpi.cpp
+	$(MPI_CXX) $(CXX_FLAGS) $< $(LIBRARY) -o $@
+
 clean:
-	rm -f $(KNL) $(ASM) $(CUDA) $(SASS) $(PTX) $(CUBIN)
+	rm -f $(KNL) $(ASM) $(PASCAL) $(SASS) $(PTX) $(CUBIN)

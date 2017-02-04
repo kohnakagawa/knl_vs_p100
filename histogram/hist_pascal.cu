@@ -4,6 +4,19 @@
 #include <chrono>
 #include "cuda_ptr.cuh"
 
+#if __CUDACC_VER_MAJOR__ < 8
+__device__ __forceinline__ double atomicAdd(double* address, double val) {
+  auto address_as_ull = reinterpret_cast<unsigned long long int*>(address);
+  unsigned long long int old = *address_as_ull, assumed;
+  do {
+    assumed = old;
+    old = atomicCAS(address_as_ull, assumed,
+                    __double_as_longlong(val + __longlong_as_double(assumed)));
+  } while (assumed != old);
+  return __longlong_as_double(old);
+}
+#endif
+
 __global__ void make_hist(const int* val,
                           double* bin,
                           const int val_size) {

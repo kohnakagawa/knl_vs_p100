@@ -1,10 +1,12 @@
-KNL  = daxpy_knl.out daxpy_knl_mpi.out
-ASM  = daxpy_knl.s
+KNL  = daxpy_knl.out daxpy_knl_mpi.out daxpy_knl.s
+HASWELL = daxpy_haswell.out daxpy_haswell.s
 CXX  = icpc
 MPI_CXX = mpiicpc
 WARNINGS = -Wall -Wextra
-CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp -xMIC-AVX512 -qopt-prefetch=4
-LIBRARY = -lmemkind
+CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp
+KNL_OPT = -xMIC-AVX512 -qopt-prefetch=4
+HASWELL_OPT = -xCORE-AVX2
+KNL_LIB = -lmemkind
 
 PASCAL = daxpy_pascal.out
 PTX = daxpy_pascal.ptx
@@ -16,7 +18,8 @@ NVCC = nvcc
 NVCCFLAGS = -O3 -std=c++11 -arch=sm_60 -Xcompiler "$(WARNINGS) -O3" -ccbin=g++ -lineinfo -Xptxas -v
 INCLUDE = -I$(CUDA_HOME)/include -I$(CUDA_HOME)/samples/common/inc
 
-knl: $(KNL) $(ASM)
+haswell: $(HASWELL)
+knl: $(KNL)
 pascal: $(PASCAL) $(SASS) $(PTX) $(CUBIN)
 
 $(PTX): daxpy_pascal.cu
@@ -40,15 +43,20 @@ $(CUBIN): daxpy_pascal.cu
 .cu.ptx:
 	$(NVCC) $(NVCCFLAGS) $(INCLUDE) -ptx $< -o $@
 
-.SUFFIXES: .cpp .s
-.cpp.s:
-	$(CXX) $(CXX_FLAGS) -S -masm=intel $< $(LIBRARY) -o $@
-
 daxpy_knl.out: daxpy_knl.cpp
-	$(CXX) $(CXX_FLAGS) $< $(LIBRARY) -o $@
+	$(CXX) $(CXX_FLAGS) $(KNL_OPT) $< $(KNL_LIB) -o $@
 
 daxpy_knl_mpi.out: daxpy_knl_mpi.cpp
-	$(MPI_CXX) $(CXX_FLAGS) $< $(LIBRARY) -o $@
+	$(MPI_CXX) $(CXX_FLAGS) $(KNL_OPT) $< $(KNL_LIB) -o $@
+
+daxpy_haswell.out: daxpy_haswell.cpp
+	$(CXX) $(CXX_FLAGS) $(HASWELL_OPT) $< -o $@
+
+daxpy_knl.s: daxpy_knl.cpp
+	$(CXX) -S -masm=intel $(CXX_FLAGS) $(KNL_OPT) $< $(KNL_LIB) -o $@
+
+daxpy_haswell.s: daxpy_haswell.cpp
+	$(CXX) -S -masm=intel $(CXX_FLAGS) $(HASWELL_OPT) $< -o $@
 
 clean:
-	rm -f $(KNL) $(ASM) $(PASCAL) $(SASS) $(PTX) $(CUBIN)
+	rm -f $(KNL) $(HASWELL) $(PASCAL) $(SASS) $(PTX) $(CUBIN)

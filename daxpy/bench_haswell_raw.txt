@@ -1,0 +1,16 @@
+@Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz
+
+(with first touch)
+# 24 threads
+array 67108864 53.1759 [GB/s] 302884 [ms]
+array 33554432 86.7937 [GB/s] 92784 [ms]
+array 16777216 88.4466 [GB/s] 45525 [ms]
+array 8388608 83.0315 [GB/s] 24247 [ms]
+array 4194304 97.6555 [GB/s] 10308 [ms]
+array 2097152 428.719 [GB/s] 1174 [ms]
+array 1048600 508.412 [GB/s] 495 [ms]
+array 524288 480.264 [GB/s] 262 [ms]
+array 262144 430.922 [GB/s] 146 [ms]
+array 139888 424.976 [GB/s] 79 [ms]
+array 65536 262.144 [GB/s] 60 [ms]
+array 32768 133.294 [GB/s] 59 [ms]

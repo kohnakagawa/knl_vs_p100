@@ -27,6 +27,7 @@ __global__ void make_hist(const int* val,
   }
 }
 
+__attribute__((noinline))
 void reference(const std::vector<int>& val,
                std::vector<double>& bin) {
   for (const auto v : val) {
@@ -46,38 +47,40 @@ void check(const std::vector<double>& bin_ref,
   }
 }
 
-#define BENCH(repr)                                                     \
+#define BENCH(repr, max, size)                                          \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    repr;                                                               \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr <<                                                        \
-      #repr << " " <<                                                   \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
+    using namespace std::chrono;                                        \
+    const int LOOP = 100;                                               \
+    const auto beg = system_clock::now();                               \
+    for (int i = 0; i < LOOP; i++) repr;                                \
+    const auto end = system_clock::now();                               \
+    const double dur = duration_cast<milliseconds>(end - beg).count();  \
+    std::cerr << "range [0 : " << max << "] ";                          \
+    std::cerr << "array size " << size << " ";                          \
+    std::cerr << dur << " [ms]\n";                                       \
   } while(0)
 
-#define BENCH_CUDA(repr, gl_size, tb_size, ...)                         \
+
+#define BENCH_CUDA(repr, max, size, gl_size, tb_size, ...)              \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    repr<<<gl_size, tb_size>>>(__VA_ARGS__) ;                           \
+    using namespace std::chrono;                                        \
+    const int LOOP = 100;                                               \
+    const auto beg = system_clock::now();                               \
+    for (int i = 0; i < LOOP; i++)                                      \
+      repr<<<gl_size, tb_size>>>(__VA_ARGS__) ;                         \
     checkCudaErrors(cudaDeviceSynchronize());                           \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr <<                                                        \
-      #repr << " " <<                                                   \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
-  } while(0)
+    const auto end = system_clock::now();                               \
+    const double dur = duration_cast<milliseconds>(end - beg).count();  \
+    std::cerr << "range [0 : " << max << "] ";                          \
+    std::cerr << "array size " << size << " ";                          \
+    std::cerr << dur << " [ms]\n";                                       \
+  } while (0)
 
 int main(const int argc, const char* argv[]) {
   int val_size = 10000000;
-  const int bin_size = 1000;
-  if (argc == 2) {
-    val_size = std::atoi(argv[1]);
-    std::cout << "array size is set to " << val_size << std::endl;
-  } else {
-    std::cout << "array size is default " << val_size << std::endl;
-  }
+  int bin_size = 1000;
+  if (argc >= 2) val_size   = std::atoi(argv[1]);
+  if (argc >= 3) bin_size   = std::atoi(argv[2]);
 
   cuda_ptr<int> val;
   cuda_ptr<double> bin;
@@ -97,11 +100,11 @@ int main(const int argc, const char* argv[]) {
   std::vector<double> bin_ref(bin_size);
 
   std::copy_n(&val[0], val_size, val_ref.begin());
-  BENCH(reference(val_ref, bin_ref));
+  BENCH(reference(val_ref, bin_ref), bin_size, val_size);
 
   const auto tb_size = 128;
   const auto gl_size = (val_size - 1) / tb_size + 1;
-  BENCH_CUDA(make_hist, gl_size, tb_size, val, bin, val_size);
+  BENCH_CUDA(make_hist, bin_size, val_size, gl_size, tb_size, val, bin, val_size);
 
   bin.dev2host();
   check(bin_ref, bin);

@@ -1,14 +1,52 @@
 @Intel(R) Xeon Phi(TM) CPU 7250 @ 1.40GHz
-array size is default 10000000
-reference(val_ref, bin_ref) 18738 [microsec]
-make_hist(val, bin, val_size) 39182 [microsec]
+@cache mode
+
+# 1 threads
+@ SIMD
+bin [0 : 1000] array size 67108864 13166 [ms]
+bin [0 : 10000] array size 67108864 21873 [ms]
+bin [0 : 1000000] array size 67108864 146197 [ms]
+bin [0 : 10000000] array size 67108864 149699 [ms]
+
+@ novector
+bin [0 : 1000] array size 67108864 20880 [ms]
+bin [0 : 10000] array size 67108864 25962 [ms]
+bin [0 : 1000000] array size 67108864 154658 [ms]
+bin [0 : 10000000] array size 67108864 164142 [ms]
+
+# 34 threads
+bin [0 : 1000] array size 67108864 56970 [ms]
+bin [0 : 10000] array size 67108864 51667 [ms]
+bin [0 : 1000000] array size 67108864 51691 [ms]
+bin [0 : 10000000] array size 67108864 46292 [ms]
+
+# 68 threads
+bin [0 : 1000] array size 67108864 32794 [ms]
+bin [0 : 10000] array size 67108864 26494 [ms]
+bin [0 : 1000000] array size 67108864 26104 [ms]
+bin [0 : 10000000] array size 67108864 23614 [ms]
+
+# 272 threads
+bin [0 : 1000] array size 67108864 25924 [ms]
+bin [0 : 10000] array size 67108864 13667 [ms]
+bin [0 : 1000000] array size 67108864 12019 [ms]
+bin [0 : 10000000] array size 67108864 8556 [ms]
 
 @Tesla P100-PCIE-16GB + Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.40GHz
-array size is default 10000000
-reference(val_ref, bin_ref) 6711 [microsec]
-make_hist 713 [microsec]
+range [0 : 1000] array size 67108864 407 [ms]
+range [0 : 10000] array size 67108864 213 [ms]
+range [0 : 1000000] array size 67108864 1495 [ms]
+range [0 : 10000000] array size 67108864 3235 [ms]
 
 @Tesla K40t + Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz
-array size is default 10000000
-reference(val_ref, bin_ref) 7998 [microsec]
-make_hist 25184 [microsec]
+range [0 : 1000] array size 67108864 16802 [ms]
+range [0 : 10000] array size 67108864 5811 [ms]
+range [0 : 1000000] array size 67108864 10443 [ms]
+range [0 : 10000000] array size 67108864 13320 [ms]
+
+@Intel(R) Xeon(R) CPU E5-2680 v3 @ 2.50GHz
+@Single core
+range [0 : 1000] array size 67108864 5340[ms]
+range [0 : 10000] array size 67108864 10127[ms]
+range [0 : 1000000] array size 67108864 36042[ms]
+range [0 : 10000000] array size 67108864 125686[ms]

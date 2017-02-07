@@ -111,7 +111,7 @@ void check(const std::vector<double>& z_ref,
       3.0 * size * sizeof(double) / ((dur * 1.0e-3  / double(LOOP)) * 1.0e9); \
     std::cerr << "array " << size << " " << band_width << " [GB/s] ";  \
     std::cerr << dur <<  " [ms]\n";                                     \
-  } while(0)
+  } while (0)
 
 int main(const int argc, const char* argv[]) {
   int val_size = 1 << 25;

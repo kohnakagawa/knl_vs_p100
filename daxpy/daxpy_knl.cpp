@@ -6,6 +6,7 @@
 #include <x86intrin.h>
 #include <hbwmalloc.h>
 
+__attribute__((noinline))
 void daxpy(const double* __restrict x,
            const double* __restrict y,
            double* __restrict z,
@@ -25,6 +26,7 @@ void daxpy(const double* __restrict x,
   }
 }
 
+__attribute__((noinline))
 void daxpy2(const double* __restrict x,
             const double* __restrict y,
             double* __restrict z,
@@ -46,6 +48,7 @@ void daxpy2(const double* __restrict x,
 
 struct double2 {double x, y;};
 
+__attribute__((noinline))
 void daxpy3(const double2* __restrict v,
             double* __restrict z,
             const double s,
@@ -61,6 +64,7 @@ void daxpy3(const double2* __restrict v,
   }
 }
 
+__attribute__((noinline))
 void reference(const std::vector<double>& x,
                const std::vector<double>& y,
                std::vector<double>& z,
@@ -95,22 +99,27 @@ void check(const std::vector<double>& z_ref,
   }
 }
 
-#define BENCH(repr, size)                                               \
-  do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    for (int i = 0; i < 10; i++) repr;                                  \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr << "array " <<                                            \
-      size << " " <<                                                    \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
+#define BENCH(repr, size)                                              \
+  do {                                                                 \
+    using namespace std::chrono;                                       \
+    const int LOOP = 10000;                                            \
+    const auto beg = system_clock::now();                              \
+    for (int i = 0; i < LOOP; i++) repr;                               \
+    const auto end = system_clock::now();                              \
+    const double dur = duration_cast<milliseconds>(end - beg).count(); \
+    const double band_width =                                          \
+      3.0 * size * sizeof(double) / ((dur * 1.0e-3  / double(LOOP)) * 1.0e9); \
+    std::cerr << "array " << size << " " << band_width << " [GB/s] ";  \
+    std::cerr << dur <<  " [ms]\n";                                     \
   } while(0)
 
 int main(const int argc, const char* argv[]) {
   int val_size = 1 << 25;
   bool use_mcdram = true;
+  bool touch = true;
   if (argc >= 2) val_size = std::atoi(argv[1]);
-  if (argc == 3) use_mcdram = std::atoi(argv[2]);
+  if (argc >= 3) use_mcdram = std::atoi(argv[2]);
+  if (argc == 4) touch = std::atoi(argv[3]);
 
   const double s = 2.0;
 
@@ -132,7 +141,7 @@ int main(const int argc, const char* argv[]) {
     posix_memalign((void**)&xy_vec, 64, val_size * sizeof(double2));
   }
 
-  first_touch(x_vec, y_vec, z_vec, xy_vec, val_size);
+  if (touch) first_touch(x_vec, y_vec, z_vec, xy_vec, val_size);
 
   std::mt19937 mt;
   std::uniform_real_distribution<double> urd(0, 1.0);

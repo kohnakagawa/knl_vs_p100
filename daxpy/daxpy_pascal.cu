@@ -27,6 +27,7 @@ __global__ void daxpy2(const double2* __restrict__ x,
   }
 }
 
+__attribute__((noinline))
 void reference(const std::vector<double>& x,
                const std::vector<double>& y,
                std::vector<double>& z,
@@ -51,31 +52,47 @@ void check(const std::vector<double>& z_ref,
 
 #define BENCH(repr, size)                                               \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    repr;                                                               \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr << "array " <<                                            \
-      size << " " <<                                                    \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
+    using namespace std::chrono;                                        \
+    const int LOOP = 10000;                                             \
+    const auto beg = system_clock::now();                               \
+    for (int i = 0; i < LOOP; i++) repr;                                \
+    const auto end = system_clock::now();                               \
+    const double dur = duration_cast<milliseconds>(end - beg).count();  \
+    const double band_width =                                           \
+      3.0 * size * sizeof(double) / ((dur * 1.0e-3  / double(LOOP)) * 1.0e9); \
+    std::cerr << "array " << size << " " << band_width << " [GB/s] ";   \
+    std::cerr << dur <<  " [ms]\n";                                     \
   } while(0)
 
 #define BENCH_CUDA(repr, size, gl_size, tb_size, ...)                   \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    repr<<<gl_size, tb_size>>>(__VA_ARGS__) ;                           \
+    using namespace std::chrono;                                        \
+    const int LOOP = 10000;                                             \
+    const auto beg = system_clock::now();                               \
+    for (int i = 0; i < LOOP; i++)                                      \
+      repr<<<gl_size, tb_size>>>(__VA_ARGS__);                          \
     checkCudaErrors(cudaDeviceSynchronize());                           \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr << "array " <<                                            \
-      size << " " <<                                                   \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
+    const auto end = system_clock::now();                               \
+    const double dur = duration_cast<milliseconds>(end - beg).count();  \
+    const double band_width =                                           \
+      3.0 * size * sizeof(double) / ((dur * 1.0e-3  / double(LOOP)) * 1.0e9); \
+    std::cerr << "array " << size << " " << band_width << " [GB/s] ";   \
+    std::cerr << dur <<  " [ms]\n";                                     \
   } while(0)
 
 int main(const int argc, const char* argv[]) {
   int val_size = 1 << 25;
-  if (argc == 2) {
+  int tb_size = 128;
+  if (argc >= 2) {
     val_size = std::atoi(argv[1]);
+  }
+  if (argc == 3) {
+    tb_size = std::atoi(argv[2]);
+  }
+
+  if (tb_size < 64 || tb_size > 1024) {
+    std::cerr << "thread block size is not appropriate.\n";
+    std::exit(1);
   }
 
   const double s = 2.0;
@@ -111,7 +128,7 @@ int main(const int argc, const char* argv[]) {
   std::copy_n(&z_vec[0], val_size, z_vec_ref.begin());
   reference(x_vec_ref, y_vec_ref, z_vec_ref, s);
 
-  const auto tb_size = 128;
+
   auto gl_size = (val_size - 1) / tb_size + 1;
   // BENCH_CUDA(daxpy, val_size, gl_size, tb_size, x_vec, y_vec, z_vec, s, val_size);
   // z_vec.dev2host();

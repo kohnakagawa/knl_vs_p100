@@ -1,0 +1,223 @@
+@Intel(R) Xeon Phi(TM) CPU 7250 @ 1.40GHz
+
+(with first touch)
+# 272 threads (4 threads per physical core)
+@ flat mode
+# without mcdram
+array 67108864 62.1132 [GB/s] 259303 [ms]
+array 33554432 60.8854 [GB/s] 132266 [ms]
+array 16777216 60.6214 [GB/s] 66421 [ms]
+array 8388608 59.6435  [GB/s] 33755  [ms]
+array 4194304 59.3884  [GB/s] 16950  [ms]
+array 2097152 66.1823 [GB/s] 7605 [ms]
+array 1048600 553.108 [GB/s] 455 [ms]
+array 524288 385.979 [GB/s] 326 [ms]
+array 262144 234.756 [GB/s] 268 [ms]
+array 139888 136.476 [GB/s] 246 [ms]
+array 65536 70.2171 [GB/s] 224 [ms]
+array 32768 35.1086 [GB/s] 224 [ms]
+
+# with mcdram
+array 67108864 304.188 [GB/s] 52948 [ms]
+array 33554432 281.448 [GB/s] 28613 [ms]
+array 16777216 295.482 [GB/s] 13627 [ms]
+array 8388608 287.692 [GB/s] 6998 [ms]
+array 4194304 262.691 [GB/s] 3832 [ms]
+array 2097152 270.165 [GB/s] 1863 [ms]
+array 1048600 559.253 [GB/s] 450 [ms]
+array 524288 388.361 [GB/s] 324 [ms]
+array 262144 234.756 [GB/s] 268 [ms]
+array 139888 138.161 [GB/s] 243 [ms]
+array 65536 70.2171 [GB/s] 224 [ms]
+array 32768 35.7469 [GB/s] 220 [ms]
+
+@ cache mode
+array 67108864 321.871 [GB/s] 50039 [ms]
+array 33554432 322.213 [GB/s] 24993 [ms]
+array 16777216 318.278 [GB/s] 12651 [ms]
+array 8388608 300.802 [GB/s] 6693 [ms]
+array 4194304 257.979 [GB/s] 3902 [ms]
+array 2097152 290.096 [GB/s] 1735 [ms]
+array 1048600 560.499 [GB/s] 449 [ms]
+array 524288 384.799 [GB/s] 327 [ms]
+array 262144 231.304 [GB/s] 272 [ms]
+array 139888 140.473 [GB/s] 239 [ms]
+array 65536 70.2171 [GB/s] 224 [ms]
+array 32768 36.0749 [GB/s] 218 [ms]
+
+# 68 threads (thread per physical core)
+@ flat mode
+# without mcdram
+array 67108864 63.6226 [GB/s] 253151 [ms]
+array 33554432 63.4889 [GB/s] 126842 [ms]
+array 16777216 63.192 [GB/s] 63719 [ms]
+array 8388608 62.7596 [GB/s] 32079 [ms]
+array 4194304 63.8889 [GB/s] 15756 [ms]
+array 2097152 83.9141 [GB/s] 5998 [ms]
+array 1048600 990.803 [GB/s] 254 [ms]
+array 524288 695.189 [GB/s] 181 [ms]
+array 262144 425.098 [GB/s] 148 [ms]
+array 139888 246.861 [GB/s] 136 [ms]
+array 65536 128.923 [GB/s] 122 [ms]
+array 32768 66.0867 [GB/s] 119 [ms]
+
+# with mcdram
+array 67108864 343.165 [GB/s] 46934 [ms]
+array 33554432 337.005 [GB/s] 23896 [ms]
+array 16777216 329.989 [GB/s] 12202 [ms]
+array 8388608 316.9 [GB/s] 6353 [ms]
+array 4194304 295.114 [GB/s] 3411 [ms]
+array 2097152 324.093 [GB/s] 1553 [ms]
+array 1048600 998.667 [GB/s] 252 [ms]
+array 524288 680.157 [GB/s] 185 [ms]
+array 262144 419.43 [GB/s] 150 [ms]
+array 139888 254.342 [GB/s] 132 [ms]
+array 65536 125.829 [GB/s] 125 [ms]
+array 32768 65.536 [GB/s] 120 [ms]
+
+@ cache mode
+array 67108864 343.509 [GB/s] 46887 [ms]
+array 33554432 335.07 [GB/s] 24034 [ms]
+array 16777216 335.265 [GB/s] 12010 [ms]
+array 8388608 302.201 [GB/s] 6662 [ms]
+array 4194304 305.225 [GB/s] 3298 [ms]
+array 2097152 327.467 [GB/s] 1537 [ms]
+array 1048600 1014.77 [GB/s] 248 [ms]
+array 524288 695.189 [GB/s] 181 [ms]
+array 262144 419.43 [GB/s] 150 [ms]
+array 139888 252.429 [GB/s] 133 [ms]
+array 65536 128.923 [GB/s] 122 [ms]
+array 32768 66.6468 [GB/s] 118 [ms]
+
+# 34 threads (thread per L2 cache)
+@ flat mode
+# without mcdram
+array 67108864 63.2705 [GB/s] 254560 [ms]
+array 33554432 63.0713 [GB/s] 127682 [ms]
+array 16777216 62.8478 [GB/s] 64068 [ms]
+array 8388608 62.3708 [GB/s] 32279 [ms]
+array 4194304 63.6224 [GB/s] 15822 [ms]
+array 2097152 84.7192 [GB/s] 5941 [ms]
+array 1048600 932.089 [GB/s] 270 [ms]
+array 524288 683.854 [GB/s] 184 [ms]
+array 262144 430.922 [GB/s] 146 [ms]
+array 139888 254.342 [GB/s] 132 [ms]
+array 65536 132.173 [GB/s] 119 [ms]
+array 32768 68.9853 [GB/s] 114 [ms]
+
+# with mcdram
+array 67108864 323.976 [GB/s] 49714 [ms]
+array 33554432 321.492 [GB/s] 25049 [ms]
+array 16777216 311.579 [GB/s] 12923 [ms]
+array 8388608 299.148 [GB/s] 6730 [ms]
+array 4194304 291.103 [GB/s] 3458 [ms]
+array 2097152 337.118 [GB/s] 1493 [ms]
+array 1048600 932.089 [GB/s] 270 [ms]
+array 524288 676.501 [GB/s] 186 [ms]
+array 262144 427.99 [GB/s] 147 [ms]
+array 139888 258.255 [GB/s] 130 [ms]
+array 65536 129.989 [GB/s] 121 [ms]
+array 32768 68.3854 [GB/s] 115 [ms]
+
+@ cache mode
+array 67108864 303.14 [GB/s] 53131 [ms]
+array 33554432 316.377 [GB/s] 25454 [ms]
+array 16777216 310.545 [GB/s] 12966 [ms]
+array 8388608 311.555 [GB/s] 6462 [ms]
+array 4194304 304.211 [GB/s] 3309 [ms]
+array 2097152 341.232 [GB/s] 1475 [ms]
+array 1048600 935.554 [GB/s] 269 [ms]
+array 524288 665.763 [GB/s] 189 [ms]
+array 262144 427.99 [GB/s] 147 [ms]
+array 139888 256.283 [GB/s] 131 [ms]
+array 65536 131.072 [GB/s] 120 [ms]
+array 32768 68.3854 [GB/s] 115 [ms]
+
+# 16 threads 
+@ flat mode
+# without mcdram
+array 67108864 62.7655 [GB/s] 256608 [ms]
+array 33554432 62.5408 [GB/s] 128765 [ms]
+array 16777216 62.2358 [GB/s] 64698 [ms]
+array 8388608 61.7566 [GB/s] 32600 [ms]
+array 4194304 61.0081 [GB/s] 16500 [ms]
+array 2097152 60.5967 [GB/s] 8306 [ms]
+array 1048600 75.3485 [GB/s] 3340 [ms]
+array 524288 497.348 [GB/s] 253 [ms]
+array 262144 388.361 [GB/s] 162 [ms]
+array 139888 270.751 [GB/s] 124 [ms]
+array 65536 158.875 [GB/s] 99 [ms]
+array 32768 85.4817 [GB/s] 92 [ms]
+
+# with mcdram
+array 67108864 167.989 [GB/s] 95876 [ms]
+array 33554432 166.906 [GB/s] 48249 [ms]
+array 16777216 165.096 [GB/s] 24389 [ms]
+array 8388608 160.727 [GB/s] 12526 [ms]
+array 4194304 155.561 [GB/s] 6471 [ms]
+array 2097152 152.613 [GB/s] 3298 [ms]
+array 1048600 170.158 [GB/s] 1479 [ms]
+array 524288 485.827 [GB/s] 259 [ms]
+array 262144 390.774 [GB/s] 161 [ms]
+array 139888 272.952 [GB/s] 123 [ms]
+array 65536 160.496 [GB/s] 98 [ms]
+array 32768 84.5626 [GB/s] 93 [ms]
+
+@ cache mode
+array 67108864 171.539 [GB/s] 93892 [ms]
+array 33554432 180.671 [GB/s] 44573 [ms]
+array 16777216 181.867 [GB/s] 22140 [ms]
+array 8388608 155.249 [GB/s] 12968 [ms]
+array 4194304 167.884 [GB/s] 5996 [ms]
+array 2097152 158.325 [GB/s] 3179 [ms]
+array 1048600 164.702 [GB/s] 1528 [ms]
+array 524288 501.311 [GB/s] 251 [ms]
+array 262144 379.003 [GB/s] 166 [ms]
+array 139888 268.585 [GB/s] 125 [ms]
+array 65536 155.729 [GB/s] 101 [ms]
+array 32768 86.4211 [GB/s] 91 [ms]
+
+(without first touch)
+# 272 threads
+@ flat mode
+# without mcdram
+array 67108864 61.7614 [GB/s] 260780 [ms]
+array 33554432 60.2197 [GB/s] 133728 [ms]
+array 16777216 59.8589 [GB/s] 67267 [ms]
+array 8388608 57.8957 [GB/s] 34774 [ms]
+array 4194304 58.386 [GB/s] 17241 [ms]
+array 2097152 67.6956 [GB/s] 7435 [ms]
+array 1048600 401.378 [GB/s] 627 [ms]
+array 524288 252.163 [GB/s] 499 [ms]
+array 262144 134.146 [GB/s] 469 [ms]
+array 139888 82.8966 [GB/s] 405 [ms]
+array 65536 40.4335 [GB/s] 389 [ms]
+array 32768 20.3739 [GB/s] 386 [ms]
+
+# with mcdram
+array 67108864 303.283 [GB/s] 53106 [ms]
+array 33554432 267.891 [GB/s] 30061 [ms]
+array 16777216 289.075 [GB/s] 13929 [ms]
+array 8388608 276.51 [GB/s] 7281 [ms]
+array 4194304 257.122 [GB/s] 3915 [ms]
+array 2097152 254.844 [GB/s] 1975 [ms]
+array 1048600 398.203 [GB/s] 632 [ms]
+array 524288 249.661 [GB/s] 504 [ms]
+array 262144 138.274 [GB/s] 455 [ms]
+array 139888 84.1432 [GB/s] 399 [ms]
+array 65536 40.3298 [GB/s] 390 [ms]
+array 32768 20.7502 [GB/s] 379 [ms]
+
+@ cache mode
+array 67108864 327.607 [GB/s] 49163 [ms]
+array 33554432 331.429 [GB/s] 24298 [ms]
+array 16777216 298.041 [GB/s] 13510 [ms]
+array 8388608 309.543 [GB/s] 6504 [ms]
+array 4194304 252.415 [GB/s] 3988 [ms]
+array 2097152 225.5 [GB/s] 2232 [ms]
+array 1048600 405.91 [GB/s] 620 [ms]
+array 524288 248.184 [GB/s] 507 [ms]
+array 262144 141.064 [GB/s] 446 [ms]
+array 139888 81.0945 [GB/s] 414 [ms]
+array 65536 38.9323 [GB/s] 404 [ms]
+array 32768 20.7502 [GB/s] 379 [ms]

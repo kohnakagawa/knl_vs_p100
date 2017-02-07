@@ -119,7 +119,7 @@ int main(const int argc, const char* argv[]) {
   bool touch = true;
   if (argc >= 2) val_size = std::atoi(argv[1]);
   if (argc >= 3) use_mcdram = std::atoi(argv[2]);
-  if (argc == 4) touch = std::atoi(argv[3]);
+  if (argc >= 4) touch = std::atoi(argv[3]);
 
   const double s = 2.0;
 

@@ -83,12 +83,8 @@ void check(const std::vector<double>& z_ref,
 int main(const int argc, const char* argv[]) {
   int val_size = 1 << 25;
   int tb_size = 128;
-  if (argc >= 2) {
-    val_size = std::atoi(argv[1]);
-  }
-  if (argc == 3) {
-    tb_size = std::atoi(argv[2]);
-  }
+  if (argc >= 2) val_size = std::atoi(argv[1]);
+  if (argc >= 3) tb_size = std::atoi(argv[2]);
 
   if (tb_size < 64 || tb_size > 1024) {
     std::cerr << "thread block size is not appropriate.\n";

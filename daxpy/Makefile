@@ -14,8 +14,13 @@ SASS = daxpy_pascal.sass
 CUBIN = daxpy_pascal.cubin
 
 CUDA_HOME = /usr/local/cuda
+ARCH = -arch=sm_60
+
+# CUDA_HOME = /home/app/cuda/cuda-7.0
+# ARCH = -arch=sm_35
+
 NVCC = nvcc
-NVCCFLAGS = -O3 -std=c++11 -arch=sm_60 -Xcompiler "$(WARNINGS) -O3" -ccbin=g++ -lineinfo -Xptxas -v
+NVCCFLAGS = -O3 -std=c++11 $(ARCH) -Xcompiler "$(WARNINGS) -O3" -ccbin=g++ -lineinfo -Xptxas -v
 INCLUDE = -I$(CUDA_HOME)/include -I$(CUDA_HOME)/samples/common/inc
 
 haswell: $(HASWELL)

@@ -2,7 +2,7 @@
 #include <chrono>
 #include <omp.h>
 
-void func(const int loop = 1) {
+void func(const int loop = 10000) {
   using namespace std::chrono;
 
   const auto beg = system_clock::now();

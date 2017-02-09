@@ -89,6 +89,20 @@ array 139888 252.429 [GB/s] 133 [ms]
 array 65536 128.923 [GB/s] 122 [ms]
 array 32768 66.6468 [GB/s] 118 [ms]
 
+@ cache mode with #pragma omp for nowait
+array 67108864 349.245 [GB/s] 46117 [ms]
+array 33554432 350.011 [GB/s] 23008 [ms]
+array 16777216 355.387 [GB/s] 11330 [ms]
+array 8388608 341.405 [GB/s] 5897 [ms]
+array 4194304 319.566 [GB/s] 3150 [ms]
+array 2097152 346.16 [GB/s] 1454 [ms]
+array 1048600 1187.09 [GB/s] 212 [ms]
+array 524288 867.787 [GB/s] 145 [ms]
+array 262144 571.951 [GB/s] 110 [ms]
+array 139888 353.401 [GB/s] 95 [ms]
+array 65536 189.502 [GB/s] 83 [ms]
+array 32768 102.134 [GB/s] 77 [ms]
+
 # 34 threads (thread per L2 cache)
 @ flat mode
 # without mcdram

@@ -16,32 +16,12 @@ void daxpy(const double* __restrict x,
   {
     const auto size = val_size;
     const auto s_vec = _mm512_set1_pd(s);
-#pragma omp for
+#pragma omp for nowait
     for (int i = 0; i < size; i += 8) {
       const auto x_vec = _mm512_load_pd(x + i);
       const auto y_vec = _mm512_load_pd(y + i);
       const auto dst   = _mm512_fmadd_pd(s_vec, x_vec, y_vec);
       _mm512_store_pd(z + i, dst);
-    }
-  }
-}
-
-__attribute__((noinline))
-void daxpy2(const double* __restrict x,
-            const double* __restrict y,
-            double* __restrict z,
-            const double s,
-            const int val_size) {
-#pragma omp parallel
-  {
-    const auto size = val_size;
-    const auto s_vec = _mm512_set1_pd(s);
-#pragma omp for
-    for (int i = 0; i < size; i += 8) {
-      const auto dst = _mm512_fmadd_pd(s_vec,
-                                       _mm512_load_pd(x + i),
-                                       _mm512_load_pd(y + i));
-      _mm512_stream_pd(z + i, dst);
     }
   }
 }

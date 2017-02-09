@@ -2,7 +2,6 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <hbwmalloc.h>
 
 __attribute__((noinline))
 void make_hist(const int* val,
@@ -60,7 +59,7 @@ void check(const double* bin_ref,
   }
 }
 
-#define BENCH(repr, max, size)                                          \
+#define BENCH(repr, max, size, sd)                                      \
   do {                                                                  \
     using namespace std::chrono;                                        \
     const int LOOP = 100;                                               \
@@ -68,18 +67,25 @@ void check(const double* bin_ref,
     for (int i = 0; i < LOOP; i++) repr;                                \
     const auto end = system_clock::now();                               \
     const double dur = duration_cast<milliseconds>(end - beg).count();  \
-    std::cerr << "bin [0 : " << max << "] ";                            \
+    std::cerr << "range [0 : " << max << "] ";                          \
+    if (sd == 0) {                                                      \
+      std::cerr << "uniform ";                                          \
+    } else {                                                            \
+      std::cerr << "sd " << sd << " ";                                  \
+    }                                                                   \
     std::cerr << "array size " << size << " ";                          \
-    std::cerr << dur << " [ms]\n";                                       \
+    std::cerr << dur << " [ms]\n";                                      \
   } while (0)
 
 int main(const int argc, const char* argv[]) {
   int val_size = 10000000;
   int bin_size = 1000;
-  if (argc >= 2) val_size   = std::atoi(argv[1]);
-  if (argc >= 3) bin_size   = std::atoi(argv[2]);
+  double sd = 0;
+  if (argc >= 2) val_size = std::atoi(argv[1]);
+  if (argc >= 3) bin_size = std::atoi(argv[2]);
+  if (argc >= 4) sd       = std::atof(argv[3]);
 
-  int* val = nullptr;
+  int* val    = nullptr;
   double* bin = nullptr;
 
   posix_memalign((void**)&val, 64, val_size * sizeof(int));
@@ -88,8 +94,22 @@ int main(const int argc, const char* argv[]) {
   first_touch(val, val_size, bin, bin_size);
 
   std::mt19937 mt;
-  std::uniform_int_distribution<> uid(0, bin_size - 1);
-  std::generate_n(val, val_size, [&mt, &uid](){return uid(mt);});
+  if (sd == 0) {
+    std::uniform_int_distribution<> uid(0, bin_size - 1);
+    std::generate_n(val, val_size, [&mt, &uid](){return uid(mt);});
+  } else if (sd > 0.0) {
+    std::normal_distribution<> nd(bin_size / 2, sd);
+    int cnt = 0;
+    while (true) {
+      const auto ret = int(std::floor(nd(mt)));
+      if (ret >= 0 && ret < bin_size) val[cnt++] = ret;
+      if (cnt == val_size) break;
+    }
+  } else {
+    std::cerr << "sd should be >= 0.\n";
+    std::exit(1);
+  }
+
   std::fill_n(bin, bin_size, 0.0);
 
   std::vector<int> val_ref(val_size), val_ref2(val_size);
@@ -98,9 +118,9 @@ int main(const int argc, const char* argv[]) {
   std::copy_n(val, val_size, val_ref.begin());
   std::copy_n(val, val_size, val_ref2.begin());
 
-  BENCH(reference(&val_ref[0], &bin_ref[0], val_size), bin_size, val_size);
-  BENCH(reference_novector(&val_ref2[0], &bin_ref2[0], val_size), bin_size, val_size);
-  BENCH(make_hist(val, bin, val_size), bin_size, val_size);
+  // BENCH(reference(&val_ref[0], &bin_ref[0], val_size), bin_size, val_size, sd);
+  // BENCH(reference_novector(&val_ref2[0], &bin_ref2[0], val_size), bin_size, val_size, sd);
+  BENCH(make_hist(val, bin, val_size), bin_size, val_size, sd);
   check(&bin_ref[0], bin, bin_size);
   check(&bin_ref2[0], &bin_ref[0], bin_size);
 

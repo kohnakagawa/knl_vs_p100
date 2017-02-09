@@ -1,6 +1,8 @@
 #!/bin/sh
 
-for bin_size in 1000 10000 1000000 10000000
+val_size=67108864
+
+for sd in 0 1000 500 100 10
 do
-    ./hist_pascal.out 67108864 $bin_size
+    ./hist_pascal.out $val_size 1000 $sd
 done

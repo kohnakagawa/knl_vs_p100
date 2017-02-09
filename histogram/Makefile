@@ -2,7 +2,7 @@ KNL  = hist_knl.out
 ASM  = hist_knl.s
 CXX  = icpc
 WARNINGS = -Wall -Wextra
-CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp -xMIC-AVX512 -qopt-prefetch=4
+CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp -xMIC-AVX512
 LIBRARY = -lmemkind
 
 PASCAL = hist_pascal.out

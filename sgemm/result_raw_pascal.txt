@@ -1,0 +1,6 @@
+array 4000 7999 [GFLOPS] 0.016 [ms]
+array 5000 7142.14 [GFLOPS] 0.035 [ms]
+array 8000 8462.28 [GFLOPS] 0.121 [ms]
+array 10000 8583.26 [GFLOPS] 0.233 [ms]
+array 16000 8923.47 [GFLOPS] 0.918 [ms]
+array 32000 8895.75 [GFLOPS] 7.367 [ms]

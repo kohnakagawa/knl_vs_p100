@@ -2,4 +2,5 @@
 25.7466 [microseconds]
 
 @Intel(R) Xeon Phi(TM) CPU 7250 @ 1.40GHz
-28.674 [microseconds]
+28.674 [microseconds] @ 272 threads
+15.2823 [microseconds] @ 68 threads

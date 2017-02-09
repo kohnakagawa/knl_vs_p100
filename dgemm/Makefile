@@ -1,19 +1,22 @@
-KNL  = dgemm_knl.out
+KNL  = dgemm_knl.out dgemm_mkl_knl.out
 ASM  = dgemm_knl.s
 CXX  = icpc
 WARNINGS = -Wall -Wextra
-CXX_FLAGS = -O3 -std=c++11 $(WARNINGS) -qopenmp -xMIC-AVX512 -mkl=parallel -mmic
-LIBRARY = -lmemkind -Wl,--start-group ${MKLROOT}/lib/mic/libmkl_intel_lp64.a ${MKLROOT}/lib/mic/libmkl_intel_thread.a ${MKLROOT}/lib/mic/libmkl_core.a -Wl,--end-group -liomp5 -lpthread -lm -ldl
-INCLUDE =  -I${MKLROOT}/include
+CXX_INCLUDE =
+CXX_LIBS =
+CXX_FLAGS = -qopenmp -O3 -std=c++11 $(WARNINGS) -mkl=parallel -xMIC-AVX512
 
-PASCAL = dgemm_pascal.out
+PASCAL = dgemm_pascal.out dgemm_cublas_pascal.out
 PTX = dgemm_pascal.ptx
 SASS = dgemm_pascal.sass
 CUBIN = dgemm_pascal.cubin
 
-CUDA_HOME = /usr/local/cuda
 NVCC = nvcc
-NVCCFLAGS = -O3 -std=c++11 -arch=sm_60 -Xcompiler "$(WARNINGS) -O3 -fopenmp" -ccbin=g++ -lineinfo -Xptxas -v
+CUDA_HOME = /usr/local/cuda
+ARCH = -arch=sm_60
+# CUDA_HOME = /home/app/cuda/cuda-7.0
+# ARCH = -arch=sm_35
+NVCCFLAGS = -O3 -std=c++11 $(ARCH) -Xcompiler "$(WARNINGS) -O3 -fopenmp" -ccbin=g++ -lineinfo -Xptxas -v
 NVCCINCLUDE = -I$(CUDA_HOME)/include -I$(CUDA_HOME)/samples/common/inc
 NVCCLIBS = -lcublas
 
@@ -43,11 +46,11 @@ $(CUBIN): dgemm_pascal.cu
 
 .SUFFIXES: .cpp .s
 .cpp.s:
-	$(CXX) $(CXX_FLAGS) -S -masm=intel $< $(LIBRARY) -o $@
+	$(CXX) $(CXX_FLAGS) $(CXX_INCLUDE) -S -masm=intel $< $(CXX_LIBS) -o $@
 
 .SUFFIXES: .cpp .out
 .cpp.out:
-	$(CXX) $(CXX_FLAGS) $< $(LIBRARY) -o $@
+	$(CXX) $(CXX_FLAGS) $(CXX_INCLUDE) $< $(CXX_LIBS) -o $@
 
 clean:
 	rm -f $(KNL) $(ASM) $(PASCAL) $(SASS) $(PTX) $(CUBIN)

@@ -10,7 +10,7 @@ static inline void __cublasSafeCall(cublasStatus_t err,
                                     const char *file,
                                     const int line) {
   if (CUBLAS_STATUS_SUCCESS != err) {
-    fprintf(stderr, "CUBLAS error in file '%s', line %d\n \nerror %d \nterminating!\n",__FILE__, __LINE__,err);
+    fprintf(stderr, "CUBLAS error in file '%s', line %d\n \nerror %d \nterminating!\n", file, line, err);
     cudaDeviceReset();
     assert(0);
   }
@@ -57,7 +57,7 @@ void dgemm_cublas(const cuda_ptr<double>& x,
                   const cuda_ptr<double>& y,
                   cuda_ptr<double>& z,
                   const cublasHandle_t& handle) {
-  const double alpha = 1.0, beta = 0.0;
+  const double alpha = 1.0, beta = 1.0;
   cublasSafeCall(cublasDgemm(handle,
                              CUBLAS_OP_T, CUBLAS_OP_T,
                              mat_size, mat_size, mat_size,
@@ -86,6 +86,7 @@ void reference(const double* __restrict x,
   const int njb = 4;
   const int nkb = 4;
 
+#pragma omp parallel for
   for (int ib = 0; ib < N; ib += nib)
     for (int jb = 0; jb < N; jb += njb)
       for (int kb = 0; kb < N; kb += nkb)
@@ -103,7 +104,7 @@ void check_cublas(const double* z_ref,
     for (int j = 0; j < mat_size; j++) {
       if (std::abs(z_ref[mat_size * j + i] - z[mat_size * i + j]) >= eps) {
         std::cout << "mismatch\n";
-        std::cout << i << " " << j 
+        std::cout << i << " " << j << " "
                   << z_ref[mat_size * j + i] << " "
                   << z[mat_size * i + j] << std::endl;
         std::exit(1);
@@ -124,31 +125,42 @@ void check(const double* z_ref,
   }
 }
 
+void show_version(const cublasHandle_t& handle) {
+  int cublas_version = 0;
+  cublasSafeCall(cublasGetVersion(handle, &cublas_version));
+  std::cout << "cublas version " << cublas_version << "\n";
+}
+
 #define BENCH(repr)                                                     \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
+    using namespace std::chrono;                                        \
+    const auto beg = system_clock::now();                               \
     repr;                                                               \
-    const auto end = std::chrono::system_clock::now();                  \
-    const auto elapsed = std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count(); \
-    std::cerr <<                                                        \
-      #repr << " " << elapsed                                           \
-              << " [microsec]\n";                                       \
-    std::cerr << std::endl;                                             \
-  } while(0)
+    const auto end = system_clock::now();                               \
+    const double elapsed =                                              \
+      1.0e-3 * duration_cast<milliseconds>(end - beg).count();          \
+    const double flops =                                                \
+      2.0 * 1.0e-9 * mat_size * mat_size * mat_size / elapsed;          \
+    std::cerr << "array " << mat_size << " " << flops << " [GFLOPS] ";  \
+    std::cerr << elapsed << " [ms]\n";                                  \
+  } while (0)
 
-#define BENCH_CUDA(repr, gl_size, tb_size, ...)                         \
+#define BENCH_CUDA(repr, gr_size, tb_size, ...)                         \
   do {                                                                  \
-    const auto beg = std::chrono::system_clock::now();                  \
-    repr<<<gl_size, tb_size>>>(__VA_ARGS__) ;                           \
+    using namespace std::chrono;                                        \
+    const auto beg = system_clock::now();                               \
+    repr<<<gr_size, tb_size>>>(__VA_ARGS__) ;                           \
     checkCudaErrors(cudaDeviceSynchronize());                           \
-    const auto end = std::chrono::system_clock::now();                  \
-    std::cerr <<                                                        \
-      #repr << " " <<                                                   \
-      std::chrono::duration_cast<std::chrono::microseconds>(end - beg).count() << \
-      " [microsec]\n";                                                  \
-  } while(0)
+    const auto end = system_clock::now();                               \
+    const double elapsed =                                              \
+      1.0e-3 * duration_cast<milliseconds>(end - beg).count();          \
+    const double flops =                                                \
+      2.0 * 1.0e-9 * mat_size * mat_size * mat_size / elapsed;          \
+    std::cerr << "array " << mat_size << " " << flops << " [GFLOPS] ";  \
+    std::cerr << elapsed << " [ms]\n";                                  \
+  } while (0)
 
-int main(const int argc, const char* argv[]) {
+int main() {
   cuda_ptr<double> x_mat, y_mat, z_mat;
   cuda_ptr<double> x_mat_bl, y_mat_bl, z_mat_bl;
 
@@ -178,13 +190,14 @@ int main(const int argc, const char* argv[]) {
 #if 0
   const auto tot_threads = mat_size * mat_size;
   const auto tb_size = 128;
-  const auto gl_size = (tot_threads - 1) / tb_size + 1;
-  BENCH_CUDA(dgemm, gl_size, tb_size, x_mat, y_mat, z_mat);
+  const auto gr_size = (tot_threads - 1) / tb_size + 1;
+  BENCH_CUDA(dgemm, gr_size, tb_size, x_mat, y_mat, z_mat);
   z_mat.dev2host();
   check(z_mat_ref, &z_mat[0]);
 #else
   cublasHandle_t handle;
   cublasSafeCall(cublasCreate(&handle));
+  show_version(handle);
   BENCH(dgemm_cublas(x_mat, y_mat, z_mat, handle));
   cublasSafeCall(cublasDestroy(handle));
   z_mat.dev2host();

@@ -3,13 +3,12 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include <mkl.h>
 #include <x86intrin.h>
 
-constexpr int mat_size = 1024;
-static_assert(mat_size % 8 == 0, "mat_size should be divided by 8.");
+int mat_size = 4096;
 
 // ver1
+__attribute__((noinline))
 void dgemm1(const double* __restrict x,
             const double* __restrict y,
             double* __restrict z) {
@@ -36,6 +35,7 @@ void dgemm1(const double* __restrict x,
 }
 
 // ver2
+__attribute__((noinline))
 void dgemm2(const double* __restrict x,
             const double* __restrict y,
             double* __restrict z) {
@@ -80,6 +80,7 @@ void dgemm2(const double* __restrict x,
 }
 
 // ver3
+__attribute__((noinline))
 void dgemm3(const double* __restrict x,
             const double* __restrict y,
             double* __restrict z) {
@@ -139,20 +140,7 @@ void dgemm3(const double* __restrict x,
   }
 }
 
-void dgemm_mkl(const double* __restrict x,
-               const double* __restrict y,
-               double* __restrict z,
-               const int N = mat_size) {
-  const double alpha = 1.0;
-  const double beta  = 0.0;
-
-  cblas_dgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
-              N, N, N,
-              alpha, x, N,
-              y, N,
-              beta,  z, N);
-}
-
+__attribute__((noinline))
 void reference(const double* __restrict x,
                const double* __restrict y,
                double* __restrict z,
@@ -164,21 +152,11 @@ void reference(const double* __restrict x,
         z[N * i + j] += x[N * i + k] * y[N * k + j];
 }
 
-void first_touch(double* x,
-                 double* y,
-                 double* z,
-                 const int val_size) {
-#pragma omp parallel for
-  for (int i = 0; i < val_size; i++) {
-    x[i] = y[i] = z[i] = 0.0;
-  }
-}
-
 void check(const double* z_ref,
            const double* z,
            const double eps = 1.0e-8) {
   for (int i = 0; i < mat_size * mat_size; i++) {
-    if (std::abs(z_ref[i] - z[i]) >= eps) {
+    if (std::abs(z_ref[i] - z[i]) / z[i] >= eps) {
       std::cout << "mismatch\n";
       std::cout << z_ref[i] << " " << z[i] << std::endl;
       std::exit(1);
@@ -189,67 +167,52 @@ void check(const double* z_ref,
 #define BENCH(repr)                                                     \
   do {                                                                  \
     using namespace std::chrono;                                        \
+    const int LOOP = 20;                                                \
     const auto beg = system_clock::now();                               \
-    repr;                                                               \
+    for (int i = 0; i < LOOP; i++) repr;                                \
     const auto end = system_clock::now();                               \
-    const auto elapsed                                                  \
-      = duration_cast<microseconds>(end - beg).count();                 \
-    std::cerr <<                                                        \
-      #repr << " " << elapsed                                           \
-              <<  " [microsecs]\n";                                     \
-    const double elapsed_sec = elapsed * 1.0e-6;                        \
-    const double tot_ops = (2.0 * mat_size - 1.0) * mat_size * mat_size;\
-    const double tot_data = 3.0 * mat_size * mat_size * sizeof(double); \
-    std::cerr << tot_ops / (elapsed_sec * 1.0e9)  << " [GFLOPS]\n";     \
-    std::cerr << tot_data / (elapsed_sec * 1.0e9) << " [GB/s]\n";       \
-  } while(0)
+    const double elapsed =                                              \
+      duration_cast<milliseconds>(end - beg).count();                   \
+    const double flops =                                                \
+      mat_size * mat_size * (2.0 * mat_size - 1.0) / ((elapsed * 1.0e-3 / double(LOOP)) * 1.0e9); \
+    std::cerr << "array " << mat_size << " " << flops << " [GFLOPS] ";  \
+    std::cerr << elapsed << " [ms]\n";                                  \
+  } while (0)
 
 int main(const int argc, const char* argv[]) {
   double *x_mat = nullptr;
   double *y_mat = nullptr;
   double *z_mat = nullptr;
+
+  if (argc >= 2) mat_size = std::atoi(argv[1]);
+
   const int tot_size = mat_size * mat_size * sizeof(double);
 
-#if 1
   posix_memalign((void**)&x_mat, 64, tot_size);
   posix_memalign((void**)&y_mat, 64, tot_size);
   posix_memalign((void**)&z_mat, 64, tot_size);
-#else
-  x_mat = (double*) mkl_malloc(tot_size, 64);
-  y_mat = (double*) mkl_malloc(tot_size, 64);
-  z_mat = (double*) mkl_malloc(tot_size, 64);
-#endif
-
-  first_touch(x_mat, y_mat, z_mat, mat_size * mat_size);
-
-  std::mt19937 mt;
-  std::uniform_real_distribution<double> urd(0, 1.0);
-  std::generate_n(x_mat, mat_size * mat_size, [&mt, &urd](){return urd(mt);});
-  std::generate_n(y_mat, mat_size * mat_size, [&mt, &urd](){return urd(mt);});
-  std::fill_n(z_mat, mat_size * mat_size, 0.0);
 
   double *x_mat_ref = new double [mat_size * mat_size];
   double *y_mat_ref = new double [mat_size * mat_size];
   double *z_mat_ref = new double [mat_size * mat_size];
 
+#pragma omp parallel for
+  for (int i = 0; i < mat_size * mat_size; i++) {
+    x_mat[i] = double(i + 1);
+    y_mat[i] = double(-i - 1);
+    z_mat[i] = 0.0;
+  }
+
   std::copy_n(x_mat, mat_size * mat_size, x_mat_ref);
   std::copy_n(y_mat, mat_size * mat_size, y_mat_ref);
   std::copy_n(z_mat, mat_size * mat_size, z_mat_ref);
   BENCH(reference(x_mat_ref, y_mat_ref, z_mat_ref));
-  // BENCH(dgemm_mkl(x_mat, y_mat, z_mat));
   BENCH(dgemm3(x_mat, y_mat, z_mat));
   check(z_mat_ref, z_mat);
 
-#if 1
   free(x_mat);
   free(y_mat);
   free(z_mat);
-#else
-  mkl_free(x_mat);
-  mkl_free(y_mat);
-  mkl_free(z_mat);
-#endif
-
 
   delete [] x_mat_ref;
   delete [] y_mat_ref;

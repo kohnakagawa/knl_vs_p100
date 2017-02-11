@@ -53,6 +53,11 @@ int main(const int argc, const char* argv[]) {
     C[i] = 0.0;
   }
 
+  // dry run
+  cblas_sgemm(CblasRowMajor, CblasNoTrans, CblasNoTrans,
+              m, n, k, alpha, A, k, B, n, beta, C, n);
+
+  // benchmark
   printf (" Computing matrix product using Intel(R) MKL sgemm function via CBLAS interface \n\n");
   double dtime;
   using namespace std::chrono;

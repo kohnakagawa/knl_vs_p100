@@ -36,6 +36,13 @@ range [0 : 1000] sd 1000 array size 67108864 16820 [ms]
 range [0 : 1000] sd 500 array size 67108864 16969 [ms]
 range [0 : 1000] sd 100 array size 67108864 32372 [ms]
 
+@GeForce GTX TITAN
+range [0 : 1000] uniform array size 67108864 15101 [ms]
+range [0 : 1000] sd 1000 array size 67108864 15109 [ms]
+range [0 : 1000] sd 500 array size 67108864 15247 [ms]
+range [0 : 1000] sd 100 array size 67108864 28901 [ms]
+range [0 : 1000] sd 10 array size 67108864 1.35786e+06 [ms]
+
 @Intel(R) Xeon(R) CPU E5-2640 v4 @ 2.50GHz
 @Single core
 range [0 : 1000] uniform array size 67108864 4451 [ms]

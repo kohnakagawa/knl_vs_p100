@@ -118,8 +118,8 @@ int main(const int argc, const char* argv[]) {
   std::copy_n(val, val_size, val_ref.begin());
   std::copy_n(val, val_size, val_ref2.begin());
 
-  // BENCH(reference(&val_ref[0], &bin_ref[0], val_size), bin_size, val_size, sd);
-  // BENCH(reference_novector(&val_ref2[0], &bin_ref2[0], val_size), bin_size, val_size, sd);
+  BENCH(reference(&val_ref[0], &bin_ref[0], val_size), bin_size, val_size, sd);
+  BENCH(reference_novector(&val_ref2[0], &bin_ref2[0], val_size), bin_size, val_size, sd);
   BENCH(make_hist(val, bin, val_size), bin_size, val_size, sd);
   check(&bin_ref[0], bin, bin_size);
   check(&bin_ref2[0], &bin_ref[0], bin_size);

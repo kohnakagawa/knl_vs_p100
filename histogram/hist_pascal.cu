@@ -18,26 +18,29 @@ __device__ __forceinline__ double atomicAdd(double* address, double val) {
 }
 #endif
 
+typedef int Dtype;
+// typedef double Dtype;
+
 __global__ void make_hist(const int* val,
-                          double* bin,
+                          Dtype* bin,
                           const int val_size) {
   const auto tid = threadIdx.x + blockIdx.x * blockDim.x;
   if (tid < val_size) {
     const auto dst = val[tid];
-    atomicAdd(&bin[dst], 1.0);
+    atomicAdd(&bin[dst], 1);
   }
 }
 
 __attribute__((noinline))
 void reference(const std::vector<int>& val,
-               std::vector<double>& bin) {
+               std::vector<Dtype>& bin) {
   for (const auto v : val) {
     bin[v] += 1.0;
   }
 }
 
-void check(const std::vector<double>& bin_ref,
-           const cuda_ptr<double>& bin) {
+void check(const std::vector<Dtype>& bin_ref,
+           const cuda_ptr<Dtype>& bin) {
   const auto size = bin_ref.size();
   for (size_t i = 0; i < size; i++) {
     if (bin_ref[i] != bin[i]) {
@@ -95,7 +98,7 @@ int main(const int argc, const char* argv[]) {
   if (argc >= 4) sd       = std::atof(argv[3]);
 
   cuda_ptr<int> val;
-  cuda_ptr<double> bin;
+  cuda_ptr<Dtype> bin;
 
   val.allocate(val_size);
   bin.allocate(bin_size);
@@ -117,18 +120,13 @@ int main(const int argc, const char* argv[]) {
     std::exit(1);
   }
 
-  std::ofstream fout("test.txt");
-  for (int i = 0; i < val_size; i++) {
-    fout << val[i] << "\n";
-  }
-
   std::fill_n(&bin[0], bin_size, 0.0);
 
   val.host2dev();
   bin.host2dev();
 
   std::vector<int> val_ref(val_size);
-  std::vector<double> bin_ref(bin_size);
+  std::vector<Dtype> bin_ref(bin_size);
 
   std::copy_n(&val[0], val_size, val_ref.begin());
   BENCH(reference(val_ref, bin_ref), bin_size, val_size, sd);

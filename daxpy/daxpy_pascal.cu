@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <random>
 #include <chrono>
-#include "cuda_ptr.cuh"
+#include "../cuda_ptr.cuh"
 
 __global__ void daxpy(const double* __restrict__ x,
                       const double* __restrict__ y,

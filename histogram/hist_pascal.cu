@@ -3,7 +3,7 @@
 #include <random>
 #include <chrono>
 #include <fstream>
-#include "cuda_ptr.cuh"
+#include "../cuda_ptr.cuh"
 
 #if __CUDACC_VER_MAJOR__ < 8
 __device__ __forceinline__ double atomicAdd(double* address, double val) {

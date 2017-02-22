@@ -4,7 +4,7 @@
 #include <chrono>
 #include <cublas_v2.h>
 #include <cassert>
-#include "cuda_ptr.cuh"
+#include "../cuda_ptr.cuh"
 
 static inline void __cublasSafeCall(cublasStatus_t err,
                                     const char *file,

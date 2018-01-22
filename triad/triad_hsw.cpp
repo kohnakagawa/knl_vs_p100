@@ -15,7 +15,7 @@ void triad(const double* __restrict x,
   {
     const auto size = val_size;
     const auto s_vec = _mm256_set1_pd(s);
-#pragma omp for
+#pragma omp for nowait
     for (int i = 0; i < size; i += 4) {
       const auto x_vec = _mm256_load_pd(x + i);
       const auto y_vec = _mm256_load_pd(y + i);

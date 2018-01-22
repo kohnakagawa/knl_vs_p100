@@ -1,0 +1,7 @@
+#+STARTUP: indent
+* KNL vs Pascal
+- Some benchmark programs to measure performance differences between Knights Landing and Pascal GPU.
+** List of programs
+- DGEMM, SGEMM
+- Histogram
+- Stream Triad

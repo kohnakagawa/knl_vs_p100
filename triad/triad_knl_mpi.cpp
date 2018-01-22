@@ -7,7 +7,7 @@
 #include <hbwmalloc.h>
 #include <mpi.h>
 
-void daxpy(const double* __restrict x,
+void triad(const double* __restrict x,
            const double* __restrict y,
            double* __restrict z,
            const double s,
@@ -26,7 +26,7 @@ void daxpy(const double* __restrict x,
   }
 }
 
-void daxpy2(const double* __restrict x,
+void triad2(const double* __restrict x,
             const double* __restrict y,
             double* __restrict z,
             const double s,
@@ -47,7 +47,7 @@ void daxpy2(const double* __restrict x,
 
 struct double2 {double x, y;};
 
-void daxpy3(const double2* __restrict v,
+void triad3(const double2* __restrict v,
             double* __restrict z,
             const double s,
             const int val_size) {
@@ -166,8 +166,8 @@ int main(int argc, char* argv[]) {
   reference(x_vec_ref, y_vec_ref, z_vec_ref, s);
 
   // BENCH(reference(x_vec_ref, y_vec_ref, z_vec_ref, s, val_size), val_size, my_rank);
-  BENCH(daxpy(x_vec, y_vec, z_vec, s, val_size), val_size, my_rank);
-  // BENCH(daxpy3(xy_vec, z_vec, s, val_size), val_size, my_rank);
+  BENCH(triad(x_vec, y_vec, z_vec, s, val_size), val_size, my_rank);
+  // BENCH(triad3(xy_vec, z_vec, s, val_size), val_size, my_rank);
 
   check(z_vec_ref, z_vec);
 

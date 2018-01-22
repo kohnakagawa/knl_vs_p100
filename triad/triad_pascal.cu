@@ -4,7 +4,7 @@
 #include <chrono>
 #include "../cuda_ptr.cuh"
 
-__global__ void daxpy(const double* __restrict__ x,
+__global__ void triad(const double* __restrict__ x,
                       const double* __restrict__ y,
                       double* __restrict__ z,
                       const double s,
@@ -15,7 +15,7 @@ __global__ void daxpy(const double* __restrict__ x,
   }
 }
 
-__global__ void daxpy2(const double2* __restrict__ x,
+__global__ void triad2(const double2* __restrict__ x,
                        const double2* __restrict__ y,
                        double2* __restrict__ z,
                        const double s,
@@ -126,12 +126,12 @@ int main(const int argc, const char* argv[]) {
 
 
   auto gl_size = (val_size - 1) / tb_size + 1;
-  // BENCH_CUDA(daxpy, val_size, gl_size, tb_size, x_vec, y_vec, z_vec, s, val_size);
+  // BENCH_CUDA(triad, val_size, gl_size, tb_size, x_vec, y_vec, z_vec, s, val_size);
   // z_vec.dev2host();
   // check(z_vec_ref, &z_vec[0]);
 
   gl_size = (val_size / 2 - 1) / tb_size + 1;
-  BENCH_CUDA(daxpy2, val_size, gl_size, tb_size, x2_vec, y2_vec, z2_vec, s, val_size / 2);
+  BENCH_CUDA(triad2, val_size, gl_size, tb_size, x2_vec, y2_vec, z2_vec, s, val_size / 2);
   z2_vec.dev2host();
   check(z_vec_ref, &z2_vec[0].x);
 }
